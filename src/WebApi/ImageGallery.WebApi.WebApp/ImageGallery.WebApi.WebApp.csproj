@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="AutoMapper" Version="7.0.1" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.Dependencyinjection" Version="5.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ImageGallery.WebApi.DataLayer\ImageGallery.WebApi.DataLayer.csproj" />
+    <ProjectReference Include="..\ImageGallery.WebApi.Services\ImageGallery.WebApi.Services.csproj" />
+    <ProjectReference Include="..\ImageGallery.WebApi.Models\ImageGallery.WebApi.Models.csproj" />
+    <ProjectReference Include="..\ImageGallery.WebApi.Mappings\ImageGallery.WebApi.Mappings.csproj" />
+  </ItemGroup>
+</Project>

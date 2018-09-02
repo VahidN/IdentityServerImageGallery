@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ImageGallery.WebApi.DomainClasses\ImageGallery.WebApi.DomainClasses.csproj" />
+	<ProjectReference Include="..\ImageGallery.WebApi.DataLayer\ImageGallery.WebApi.DataLayer.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.0" />
+  </ItemGroup>  
+</Project>
