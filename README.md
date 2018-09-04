@@ -6,6 +6,7 @@ This project is a collection of tips and tricks about how to use IdentityServer 
 
 How to run it
 -------------
+
 - First open the `src\WebApi\ImageGallery.WebApi.WebApp` folder and then run the following files:
   - _0-restore.bat
   - _1-dotnet_run.bat
