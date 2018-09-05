@@ -7,22 +7,33 @@ using System.Threading.Tasks;
 using ImageGallery.MvcClient.Services;
 using ImageGallery.MvcClient.ViewModels;
 using ImageGallery.WebApi.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 
 namespace ImageGallery.MvcClient.WebApp.Controllers
 {
+    [Authorize]
     public class GalleryController : Controller
     {
         private readonly IImageGalleryHttpClient _imageGalleryHttpClient;
+        private readonly ILogger<GalleryController> _logger;
 
-        public GalleryController(IImageGalleryHttpClient imageGalleryHttpClient)
+        public GalleryController(
+            IImageGalleryHttpClient imageGalleryHttpClient,
+            ILogger<GalleryController> logger)
         {
             _imageGalleryHttpClient = imageGalleryHttpClient;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
         {
+            await WriteOutIdentityInformation();
+
             var response = await _imageGalleryHttpClient.HttpClient.GetAsync("api/images");
             response.EnsureSuccessStatusCode();
 
@@ -107,6 +118,24 @@ namespace ImageGallery.MvcClient.WebApp.Controllers
             response.EnsureSuccessStatusCode();
 
             return RedirectToAction("Index");
+        }
+
+        public async Task WriteOutIdentityInformation()
+        {
+            var identityToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.IdToken);
+            _logger.LogInformation($"Identity token: {identityToken}");
+
+            foreach (var claim in User.Claims)
+            {
+                _logger.LogInformation($"Claim type: {claim.Type} - Claim value: {claim.Value}");
+            }
+        }
+
+        public async Task Logout()
+        {
+            // Clears the  local cookie ("Cookies" must match the name of the scheme)
+            await HttpContext.SignOutAsync("Cookies");
+            await HttpContext.SignOutAsync("oidc");
         }
     }
 }

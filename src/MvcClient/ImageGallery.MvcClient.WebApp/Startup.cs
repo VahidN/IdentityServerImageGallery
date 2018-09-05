@@ -27,6 +27,26 @@ namespace ImageGallery.MvcClient.WebApp
 
             // register an IImageGalleryHttpClient
             services.AddHttpClient<IImageGalleryHttpClient, ImageGalleryHttpClient>();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = "Cookies";
+                options.DefaultChallengeScheme = "oidc";
+            }).AddCookie("Cookies")
+              .AddOpenIdConnect("oidc", options =>
+              {
+                  options.SignInScheme = "Cookies";
+                  options.Authority = "https://localhost:6001";
+                  options.ClientId = "imagegalleryclient";
+                  options.ResponseType = "code id_token";
+                  //options.CallbackPath = new PathString("...")
+                  //options.SignedOutCallbackPath = new PathString("...")
+                  options.Scope.Add("openid");
+                  options.Scope.Add("profile");
+                  options.SaveTokens = true;
+                  options.ClientSecret = "secret";
+                  options.GetClaimsFromUserInfoEndpoint = true;
+              });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,6 +63,9 @@ namespace ImageGallery.MvcClient.WebApp
             }
 
             app.UseHttpsRedirection();
+
+            app.UseAuthentication();
+
             app.UseStaticFiles();
 
             app.UseMvc(routes =>
