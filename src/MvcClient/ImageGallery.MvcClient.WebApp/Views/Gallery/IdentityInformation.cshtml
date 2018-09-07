@@ -1,0 +1,12 @@
+﻿<ul>
+   <li>
+      IdentityToken: @ViewBag.IdentityToken
+   </li>
+   <li>
+      User.Identity.Name: @User.Identity.Name
+   </li>
+   @foreach(var claim in User.Claims)
+   {
+       <li>Claim type: @claim.Type - Claim value: @claim.Value</li>
+   }
+</ul>

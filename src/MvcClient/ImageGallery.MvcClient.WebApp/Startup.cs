@@ -1,9 +1,13 @@
-﻿using ImageGallery.MvcClient.Services;
+﻿using System.IdentityModel.Tokens.Jwt;
+using IdentityModel;
+using ImageGallery.MvcClient.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ImageGallery.MvcClient.WebApp
 {
@@ -12,6 +16,7 @@ namespace ImageGallery.MvcClient.WebApp
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         }
 
         public IConfiguration Configuration { get; }
@@ -32,20 +37,39 @@ namespace ImageGallery.MvcClient.WebApp
             {
                 options.DefaultScheme = "Cookies";
                 options.DefaultChallengeScheme = "oidc";
-            }).AddCookie("Cookies")
+            }).AddCookie("Cookies", options =>
+              {
+                  options.AccessDeniedPath = "/Authorization/AccessDenied";
+              })
               .AddOpenIdConnect("oidc", options =>
               {
                   options.SignInScheme = "Cookies";
-                  options.Authority = "https://localhost:6001";
+                  options.Authority = Configuration["IDPBaseAddress"];
                   options.ClientId = "imagegalleryclient";
                   options.ResponseType = "code id_token";
                   //options.CallbackPath = new PathString("...")
                   //options.SignedOutCallbackPath = new PathString("...")
                   options.Scope.Add("openid");
                   options.Scope.Add("profile");
+                  options.Scope.Add("address");
+                  options.Scope.Add("roles");
+
                   options.SaveTokens = true;
                   options.ClientSecret = "secret";
                   options.GetClaimsFromUserInfoEndpoint = true;
+
+                  options.ClaimActions.Remove("amr");
+                  options.ClaimActions.DeleteClaim("sid");
+                  options.ClaimActions.DeleteClaim("idp");
+                  // options.ClaimActions.DeleteClaim("address");
+
+                  options.ClaimActions.MapUniqueJsonKey(claimType: "role", jsonKey: "role");
+
+                  options.TokenValidationParameters = new TokenValidationParameters
+                  {
+                      NameClaimType = JwtClaimTypes.GivenName,
+                      RoleClaimType = JwtClaimTypes.Role,
+                  };
               });
         }
 

@@ -23,6 +23,8 @@ namespace DNT.IDP
                     {
                         new Claim("given_name", "Vahid"),
                         new Claim("family_name", "N"),
+                        new Claim("address", "Main Road 1"),
+                        new Claim("role", "PayingUser")
                     }
                 },
                 new TestUser
@@ -35,6 +37,8 @@ namespace DNT.IDP
                     {
                         new Claim("given_name", "User 2"),
                         new Claim("family_name", "Test"),
+                        new Claim("address", "Big Street 2"),
+                        new Claim("role", "FreeUser")
                     }
                 }
             };
@@ -46,7 +50,12 @@ namespace DNT.IDP
             return new List<IdentityResource>
             {
                 new IdentityResources.OpenId(),
-                new IdentityResources.Profile()
+                new IdentityResources.Profile(),
+                new IdentityResources.Address(),
+                new IdentityResource(
+                    name: "roles",
+                    displayName: "Your role(s)",
+                    claimTypes: new List<string>() { "role" })
             };
         }
 
@@ -70,13 +79,14 @@ namespace DNT.IDP
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.Address,
+                        "roles"
                     },
                     ClientSecrets =
                     {
                         new Secret("secret".Sha256())
-                    },
-                    // AlwaysIncludeUserClaimsInIdToken = true
+                    }
                 }
              };
         }

@@ -4,12 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using IdentityModel.Client;
 using ImageGallery.MvcClient.Services;
 using ImageGallery.MvcClient.ViewModels;
 using ImageGallery.WebApi.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
@@ -20,20 +22,18 @@ namespace ImageGallery.MvcClient.WebApp.Controllers
     public class GalleryController : Controller
     {
         private readonly IImageGalleryHttpClient _imageGalleryHttpClient;
-        private readonly ILogger<GalleryController> _logger;
+        private readonly IConfiguration _configuration;
 
         public GalleryController(
             IImageGalleryHttpClient imageGalleryHttpClient,
-            ILogger<GalleryController> logger)
+            IConfiguration configuration)
         {
             _imageGalleryHttpClient = imageGalleryHttpClient;
-            _logger = logger;
+            _configuration = configuration;
         }
 
         public async Task<IActionResult> Index()
         {
-            await WriteOutIdentityInformation();
-
             var response = await _imageGalleryHttpClient.HttpClient.GetAsync("api/images");
             response.EnsureSuccessStatusCode();
 
@@ -120,15 +120,11 @@ namespace ImageGallery.MvcClient.WebApp.Controllers
             return RedirectToAction("Index");
         }
 
-        public async Task WriteOutIdentityInformation()
+        public async Task<IActionResult> IdentityInformation()
         {
             var identityToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.IdToken);
-            _logger.LogInformation($"Identity token: {identityToken}");
-
-            foreach (var claim in User.Claims)
-            {
-                _logger.LogInformation($"Claim type: {claim.Type} - Claim value: {claim.Value}");
-            }
+            ViewBag.IdentityToken = identityToken;
+            return View();
         }
 
         public async Task Logout()
@@ -136,6 +132,25 @@ namespace ImageGallery.MvcClient.WebApp.Controllers
             // Clears the  local cookie ("Cookies" must match the name of the scheme)
             await HttpContext.SignOutAsync("Cookies");
             await HttpContext.SignOutAsync("oidc");
+        }
+
+        [Authorize(Roles = "PayingUser")]
+        public async Task<IActionResult> OrderFrame()
+        {
+            var discoveryClient = new DiscoveryClient(_configuration["IDPBaseAddress"]);
+            var metaDataResponse = await discoveryClient.GetAsync();
+
+            var userInfoClient = new UserInfoClient(metaDataResponse.UserInfoEndpoint);
+
+            var accessToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+            var response = await userInfoClient.GetAsync(accessToken);
+            if (response.IsError)
+            {
+                throw new Exception("Problem accessing the UserInfo endpoint.", response.Exception);
+            }
+
+            var address = response.Claims.FirstOrDefault(c => c.Type == "address")?.Value;
+            return View(new OrderFrameViewModel(address));
         }
     }
 }
