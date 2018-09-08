@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="IdentityServer4" Version="2.2.0" />
+    <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.6.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 

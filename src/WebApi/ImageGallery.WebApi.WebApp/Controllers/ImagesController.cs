@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using ImageGallery.WebApi.DomainClasses;
 using ImageGallery.WebApi.Models;
 using ImageGallery.WebApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ImageGallery.WebApi.WebApp.Controllers
 {
     [Route("api/images")]
+    [Authorize]
     public class ImagesController : Controller
     {
         private readonly IImagesService _imagesService;
@@ -31,7 +34,8 @@ namespace ImageGallery.WebApi.WebApp.Controllers
         [HttpGet()]
         public async Task<IActionResult> GetImages()
         {
-            var imagesFromRepo = await _imagesService.GetImagesAsync();
+            var ownerId = this.User.Claims.FirstOrDefault(claim => claim.Type == "sub").Value;
+            var imagesFromRepo = await _imagesService.GetImagesAsync(ownerId);
             var imagesToReturn = _mapper.Map<IEnumerable<ImageModel>>(imagesFromRepo);
             return Ok(imagesToReturn);
         }
@@ -50,6 +54,7 @@ namespace ImageGallery.WebApi.WebApp.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "PayingUser")]
         public async Task<IActionResult> CreateImage([FromBody] ImageForCreationModel imageForCreation)
         {
             if (imageForCreation == null)
@@ -84,6 +89,10 @@ namespace ImageGallery.WebApi.WebApp.Controllers
 
             // fill out the filename
             imageEntity.FileName = fileName;
+
+            // set the ownerId on the imageEntity
+            var ownerId = User.Claims.FirstOrDefault(c => c.Type == "sub").Value;
+            imageEntity.OwnerId = ownerId;
 
             // add and save.
             await _imagesService.AddImageAsync(imageEntity);

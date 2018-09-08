@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 
@@ -34,7 +33,14 @@ namespace ImageGallery.MvcClient.WebApp.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var response = await _imageGalleryHttpClient.HttpClient.GetAsync("api/images");
+            var httpClient = await _imageGalleryHttpClient.GetHttpClientAsync();
+            var response = await httpClient.GetAsync("api/images");
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return RedirectToAction("AccessDenied", "Authorization");
+            }
             response.EnsureSuccessStatusCode();
 
             var imagesAsString = await response.Content.ReadAsStringAsync();
@@ -45,7 +51,8 @@ namespace ImageGallery.MvcClient.WebApp.Controllers
 
         public async Task<IActionResult> EditImage(Guid id)
         {
-            var response = await _imageGalleryHttpClient.HttpClient.GetAsync($"api/images/{id}");
+            var httpClient = await _imageGalleryHttpClient.GetHttpClientAsync();
+            var response = await httpClient.GetAsync($"api/images/{id}");
             response.EnsureSuccessStatusCode();
 
             var imageAsString = await response.Content.ReadAsStringAsync();
@@ -69,7 +76,8 @@ namespace ImageGallery.MvcClient.WebApp.Controllers
 
             var imageForUpdate = new ImageForUpdateModel { Title = editImageViewModel.Title };
             var serializedImageForUpdate = JsonConvert.SerializeObject(imageForUpdate);
-            var response = await _imageGalleryHttpClient.HttpClient.PutAsync(
+            var httpClient = await _imageGalleryHttpClient.GetHttpClientAsync();
+            var response = await httpClient.PutAsync(
                 $"api/images/{editImageViewModel.Id}",
                 new StringContent(serializedImageForUpdate, System.Text.Encoding.Unicode, "application/json"));
             response.EnsureSuccessStatusCode();
@@ -79,18 +87,21 @@ namespace ImageGallery.MvcClient.WebApp.Controllers
 
         public async Task<IActionResult> DeleteImage(Guid id)
         {
-            var response = await _imageGalleryHttpClient.HttpClient.DeleteAsync($"api/images/{id}");
+            var httpClient = await _imageGalleryHttpClient.GetHttpClientAsync();
+            var response = await httpClient.DeleteAsync($"api/images/{id}");
             response.EnsureSuccessStatusCode();
 
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "PayingUser")]
         public IActionResult AddImage()
         {
             return View();
         }
 
         [HttpPost]
+        [Authorize(Roles = "PayingUser")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddImage(AddImageViewModel addImageViewModel)
         {
@@ -112,7 +123,8 @@ namespace ImageGallery.MvcClient.WebApp.Controllers
             }
 
             var serializedImageForCreation = JsonConvert.SerializeObject(imageForCreation);
-            var response = await _imageGalleryHttpClient.HttpClient.PostAsync(
+            var httpClient = await _imageGalleryHttpClient.GetHttpClientAsync();
+            var response = await httpClient.PostAsync(
                 $"api/images",
                 new StringContent(serializedImageForCreation, System.Text.Encoding.Unicode, "application/json"));
             response.EnsureSuccessStatusCode();

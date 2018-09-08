@@ -12,10 +12,11 @@ namespace ImageGallery.WebApi.Services
     {
         Task<bool> ImageExistsAsync(Guid id);
         Task<Image> GetImageAsync(Guid id);
-        Task<List<Image>> GetImagesAsync();
+        Task<List<Image>> GetImagesAsync(string ownerId);
         Task<Image> AddImageAsync(Image image);
         Task UpdateImageAsync(Image image);
         Task DeleteImageAsync(Image image);
+        Task<bool> IsImageOwnerAsync(Guid id, string ownerId);
     }
 
     public class ImagesService : IImagesService
@@ -40,9 +41,14 @@ namespace ImageGallery.WebApi.Services
             return _images.FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        public Task<List<Image>> GetImagesAsync()
+        public Task<List<Image>> GetImagesAsync(string ownerId)
         {
-            return _images.OrderBy(i => i.Title).ToListAsync();
+            return _images.Where(image => image.OwnerId == ownerId).OrderBy(image => image.Title).ToListAsync();
+        }
+
+        public Task<bool> IsImageOwnerAsync(Guid id, string ownerId)
+        {
+            return _images.AnyAsync(i => i.Id == id && i.OwnerId == ownerId);
         }
 
         public async Task<Image> AddImageAsync(Image image)

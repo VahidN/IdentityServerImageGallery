@@ -59,6 +59,18 @@ namespace DNT.IDP
             };
         }
 
+        // api-related resources (scopes)
+        public static IEnumerable<ApiResource> GetApiResources()
+        {
+            return new List<ApiResource>
+            {
+                new ApiResource(
+                    name: "imagegalleryapi",
+                    displayName: "Image Gallery API",
+                    claimTypes: new List<string> {"role" })
+            };
+        }
+
         public static IEnumerable<Client> GetClients()
         {
             return new List<Client>
@@ -81,7 +93,8 @@ namespace DNT.IDP
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
                         IdentityServerConstants.StandardScopes.Address,
-                        "roles"
+                        "roles",
+                        "imagegalleryapi"
                     },
                     ClientSecrets =
                     {
