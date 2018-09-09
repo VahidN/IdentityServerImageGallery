@@ -146,7 +146,7 @@ namespace ImageGallery.MvcClient.WebApp.Controllers
             await HttpContext.SignOutAsync("oidc");
         }
 
-        [Authorize(Roles = "PayingUser")]
+        [Authorize(Policy = "CanOrderFrame")]
         public async Task<IActionResult> OrderFrame()
         {
             var discoveryClient = new DiscoveryClient(_configuration["IDPBaseAddress"]);

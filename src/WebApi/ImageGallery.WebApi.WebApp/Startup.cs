@@ -6,6 +6,7 @@ using IdentityServer4.AccessTokenValidation;
 using ImageGallery.WebApi.DataLayer.Context;
 using ImageGallery.WebApi.Mappings;
 using ImageGallery.WebApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -43,6 +44,19 @@ namespace ImageGallery.WebApi.WebApp
                             serverDbContextOptionsBuilder.EnableRetryOnFailure();
                         });
             });
+
+            services.AddAuthorization(authorizationOptions =>
+            {
+                authorizationOptions.AddPolicy(
+                   name: "MustOwnImage",
+                   configurePolicy: policyBuilder =>
+                    {
+                        policyBuilder.RequireAuthenticatedUser();
+                        policyBuilder.AddRequirements(new MustOwnImageRequirement());
+                    });
+            });
+            services.AddScoped<IAuthorizationHandler, MustOwnImageHandler>();
+
 
             services.AddAuthentication(defaultScheme: IdentityServerAuthenticationDefaults.AuthenticationScheme)
                .AddIdentityServerAuthentication(options =>

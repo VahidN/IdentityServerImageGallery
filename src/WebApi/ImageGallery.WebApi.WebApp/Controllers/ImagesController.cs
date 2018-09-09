@@ -41,6 +41,7 @@ namespace ImageGallery.WebApi.WebApp.Controllers
         }
 
         [HttpGet("{id}", Name = "GetImage")]
+        [Authorize("MustOwnImage")]
         public async Task<IActionResult> GetImage(Guid id)
         {
             var imageFromRepo = await _imagesService.GetImageAsync(id);
@@ -101,6 +102,7 @@ namespace ImageGallery.WebApi.WebApp.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize("MustOwnImage")]
         public async Task<IActionResult> DeleteImage(Guid id)
         {
             var imageFromRepo = await _imagesService.GetImageAsync(id);
@@ -114,6 +116,7 @@ namespace ImageGallery.WebApi.WebApp.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize("MustOwnImage")]
         public async Task<IActionResult> UpdateImage(Guid id, [FromBody] ImageForUpdateModel imageForUpdate)
         {
             if (imageForUpdate == null)

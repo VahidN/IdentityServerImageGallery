@@ -24,7 +24,9 @@ namespace DNT.IDP
                         new Claim("given_name", "Vahid"),
                         new Claim("family_name", "N"),
                         new Claim("address", "Main Road 1"),
-                        new Claim("role", "PayingUser")
+                        new Claim("role", "PayingUser"),
+                        new Claim("subscriptionlevel", "PayingUser"),
+                        new Claim("country", "ir")
                     }
                 },
                 new TestUser
@@ -38,7 +40,9 @@ namespace DNT.IDP
                         new Claim("given_name", "User 2"),
                         new Claim("family_name", "Test"),
                         new Claim("address", "Big Street 2"),
-                        new Claim("role", "FreeUser")
+                        new Claim("role", "FreeUser"),
+                        new Claim("subscriptionlevel", "FreeUser"),
+                        new Claim("country", "be")
                     }
                 }
             };
@@ -55,7 +59,15 @@ namespace DNT.IDP
                 new IdentityResource(
                     name: "roles",
                     displayName: "Your role(s)",
-                    claimTypes: new List<string>() { "role" })
+                    claimTypes: new List<string> { "role" }),
+                new IdentityResource(
+                    name: "country",
+                    displayName: "The country you're living in",
+                    claimTypes: new List<string> { "country" }),
+                new IdentityResource(
+                    name: "subscriptionlevel",
+                    displayName: "Your subscription level",
+                    claimTypes: new List<string> { "subscriptionlevel" })
             };
         }
 
@@ -94,7 +106,9 @@ namespace DNT.IDP
                         IdentityServerConstants.StandardScopes.Profile,
                         IdentityServerConstants.StandardScopes.Address,
                         "roles",
-                        "imagegalleryapi"
+                        "imagegalleryapi",
+                        "country",
+                        "subscriptionlevel"
                     },
                     ClientSecrets =
                     {
