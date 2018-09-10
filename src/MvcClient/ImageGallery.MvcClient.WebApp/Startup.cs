@@ -58,7 +58,7 @@ namespace ImageGallery.MvcClient.WebApp
               {
                   options.SignInScheme = "Cookies";
                   options.Authority = Configuration["IDPBaseAddress"];
-                  options.ClientId = "imagegalleryclient";
+                  options.ClientId = Configuration["ClientId"];
                   options.ResponseType = "code id_token";
                   //options.CallbackPath = new PathString("...")
                   //options.SignedOutCallbackPath = new PathString("...")
@@ -69,9 +69,10 @@ namespace ImageGallery.MvcClient.WebApp
                   options.Scope.Add("imagegalleryapi");
                   options.Scope.Add("subscriptionlevel");
                   options.Scope.Add("country");
+                  options.Scope.Add("offline_access");
 
                   options.SaveTokens = true;
-                  options.ClientSecret = "secret";
+                  options.ClientSecret = Configuration["ClientSecret"];
                   options.GetClaimsFromUserInfoEndpoint = true;
 
                   options.ClaimActions.Remove("amr");

@@ -80,6 +80,9 @@ namespace DNT.IDP
                     name: "imagegalleryapi",
                     displayName: "Image Gallery API",
                     claimTypes: new List<string> {"role" })
+                {
+                  ApiSecrets = { new Secret("apisecret".Sha256()) }
+                }
             };
         }
 
@@ -113,7 +116,15 @@ namespace DNT.IDP
                     ClientSecrets =
                     {
                         new Secret("secret".Sha256())
-                    }
+                    },
+                    // IdentityTokenLifetime = ... // defaults to 300 seconds / 5 minutes
+                    // AuthorizationCodeLifetime = ... // defaults to 300 seconds / 5 minutes
+                    // AccessTokenLifetime = ... // defaults to 3600 seconds / 1 hour
+                    AllowOfflineAccess = true,
+                    // AbsoluteRefreshTokenLifetime = ... // Defaults to 2592000 seconds / 30 days
+                    // RefreshTokenExpiration = TokenExpiration.Sliding
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    AccessTokenType = AccessTokenType.Reference
                 }
              };
         }

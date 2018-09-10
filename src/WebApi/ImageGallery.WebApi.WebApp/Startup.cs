@@ -63,6 +63,7 @@ namespace ImageGallery.WebApi.WebApp
                {
                    options.Authority = Configuration["IDPBaseAddress"];
                    options.ApiName = "imagegalleryapi";
+                   options.ApiSecret = "apisecret";
                });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);

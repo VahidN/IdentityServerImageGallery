@@ -141,9 +141,41 @@ namespace ImageGallery.MvcClient.WebApp.Controllers
 
         public async Task Logout()
         {
+            await revokeTokens();
             // Clears the  local cookie ("Cookies" must match the name of the scheme)
             await HttpContext.SignOutAsync("Cookies");
             await HttpContext.SignOutAsync("oidc");
+        }
+
+        private async Task revokeTokens()
+        {
+            var discoveryClient = new DiscoveryClient(_configuration["IDPBaseAddress"]);
+            var metaDataResponse = await discoveryClient.GetAsync();
+            var tokenRevocationClient = new TokenRevocationClient(
+                metaDataResponse.RevocationEndpoint,
+                _configuration["ClientId"],
+                _configuration["ClientSecret"]
+            );
+
+            var accessToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                var response = await tokenRevocationClient.RevokeAccessTokenAsync(accessToken);
+                if (response.IsError)
+                {
+                    throw new Exception("Problem accessing the TokenRevocation endpoint.", response.Exception);
+                }
+            }
+
+            var refreshToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.RefreshToken);
+            if (!string.IsNullOrWhiteSpace(refreshToken))
+            {
+                var response = await tokenRevocationClient.RevokeRefreshTokenAsync(refreshToken);
+                if (response.IsError)
+                {
+                    throw new Exception("Problem accessing the TokenRevocation endpoint.", response.Exception);
+                }
+            }
         }
 
         [Authorize(Policy = "CanOrderFrame")]
