@@ -39,6 +39,15 @@
                                         </label>
                                     </div>
                                 }
+                                
+                                <div class="form-group">
+                                    <a asp-action="RegisterUser"
+                                       asp-controller="UserRegistration"
+                                       asp-route-returnUrl="@Model.ReturnUrl">
+                                        Haven't got an account yet?  Click here.
+                                    </a>
+                                </div>
+                                
                                 <div class="form-group">
                                     <button class="btn btn-primary" name="button" value="login">Login</button>
                                     <button class="btn btn-default" name="button" value="cancel">Cancel</button>

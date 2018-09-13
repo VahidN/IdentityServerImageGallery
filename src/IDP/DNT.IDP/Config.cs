@@ -124,7 +124,8 @@ namespace DNT.IDP
                     // AbsoluteRefreshTokenLifetime = ... // Defaults to 2592000 seconds / 30 days
                     // RefreshTokenExpiration = TokenExpiration.Sliding
                     UpdateAccessTokenClaimsOnRefresh = true,
-                    AccessTokenType = AccessTokenType.Reference
+                    AccessTokenType = AccessTokenType.Reference,
+                    RequireConsent = false
                 }
              };
         }
