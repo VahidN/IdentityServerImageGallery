@@ -4,6 +4,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using DNT.IDP.DomainClasses;
+using DNT.IDP.Services;
 using IdentityModel;
 using IdentityServer4.Events;
 using IdentityServer4.Services;
@@ -13,6 +15,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace DNT.IDP.Controllers.Account
 {
@@ -20,24 +23,24 @@ namespace DNT.IDP.Controllers.Account
     [AllowAnonymous]
     public class ExternalController : Controller
     {
-        private readonly TestUserStore _users;
         private readonly IIdentityServerInteractionService _interaction;
         private readonly IClientStore _clientStore;
         private readonly IEventService _events;
+        private readonly IUsersService _usersService;
+        private readonly ILogger<ExternalController> _logger;
 
         public ExternalController(
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IEventService events,
-            TestUserStore users = null)
+            IUsersService usersService,
+            ILogger<ExternalController> logger)
         {
-            // if the TestUserStore is not in DI, then we'll just use the global users collection
-            // this is where you would plug in your own custom identity management library (e.g. ASP.NET Identity)
-            _users = users ?? new TestUserStore(TestUsers.Users);
-
             _interaction = interaction;
             _clientStore = clientStore;
             _events = events;
+            _usersService = usersService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -57,12 +60,12 @@ namespace DNT.IDP.Controllers.Account
 
             if (AccountOptions.WindowsAuthenticationSchemeName == provider)
             {
-                // windows authentication needs special handling
+               _logger.LogInformation("windows authentication needs special handling");
                 return await ProcessWindowsLoginAsync(returnUrl);
             }
             else
             {
-                // start challenge and roundtrip the return URL and scheme 
+                _logger.LogInformation("start challenge and roundtrip the return URL and scheme"); 
                 var props = new AuthenticationProperties
                 {
                     RedirectUri = Url.Action(nameof(Callback)),
@@ -89,15 +92,18 @@ namespace DNT.IDP.Controllers.Account
             {
                 throw new Exception("External authentication error");
             }
+            
+            // retrieve return URL
+            var returnUrl = result.Properties.Items["returnUrl"] ?? "~/";
 
             // lookup our user and external provider info
-            var (user, provider, providerUserId, claims) = FindUserFromExternalProvider(result);
+            var (user, provider, providerUserId, claims) = await FindUserFromExternalProvider(result);
             if (user == null)
             {
-                // this might be where you might initiate a custom workflow for user registration
-                // in this sample we don't show how that would be done, as our sample implementation
-                // simply auto-provisions new external user
-                user = AutoProvisionUser(provider, providerUserId, claims);
+                var returnUrlAfterRegistration = Url.Action("Callback", new { returnUrl = returnUrl });
+                var continueWithUrl = Url.Action("RegisterUser", "UserRegistration" ,
+                    new { returnUrl = returnUrlAfterRegistration, provider = provider, providerUserId = providerUserId });
+                return Redirect(continueWithUrl);
             }
 
             // this allows us to collect any additonal claims or properties
@@ -115,9 +121,6 @@ namespace DNT.IDP.Controllers.Account
 
             // delete temporary cookie used during external authentication
             await HttpContext.SignOutAsync(IdentityServer4.IdentityServerConstants.ExternalCookieAuthenticationScheme);
-
-            // retrieve return URL
-            var returnUrl = result.Properties.Items["returnUrl"] ?? "~/";
 
             // check if external login is in the context of an OIDC request
             var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
@@ -181,7 +184,7 @@ namespace DNT.IDP.Controllers.Account
             }
         }
 
-        private (TestUser user, string provider, string providerUserId, IEnumerable<Claim> claims) FindUserFromExternalProvider(AuthenticateResult result)
+        private async Task<(User user, string provider, string providerUserId, IEnumerable<Claim> claims)> FindUserFromExternalProvider(AuthenticateResult result)
         {
             var externalUser = result.Principal;
 
@@ -200,15 +203,9 @@ namespace DNT.IDP.Controllers.Account
             var providerUserId = userIdClaim.Value;
 
             // find external user
-            var user = _users.FindByExternalProvider(provider, providerUserId);
+            var user = await _usersService.GetUserByProviderAsync(provider, providerUserId);
 
             return (user, provider, providerUserId, claims);
-        }
-
-        private TestUser AutoProvisionUser(string provider, string providerUserId, IEnumerable<Claim> claims)
-        {
-            var user = _users.AutoProvisionUser(provider, providerUserId, claims.ToList());
-            return user;
         }
 
         private void ProcessLoginCallbackForOidc(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps)

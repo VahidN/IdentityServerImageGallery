@@ -24,9 +24,15 @@ namespace DNT.IDP.Controllers.UserRegistration
         }
 
         [HttpGet]
-        public IActionResult RegisterUser(string returnUrl)
+        public IActionResult RegisterUser(RegistrationInputModel registrationInputModel)
         {
-            var vm = new RegisterUserViewModel {ReturnUrl = returnUrl};
+            var vm = new RegisterUserViewModel
+            {
+                ReturnUrl = registrationInputModel.ReturnUrl,
+                Provider = registrationInputModel.Provider,
+                ProviderUserId = registrationInputModel.ProviderUserId
+            };
+
             return View(vm);
         }
 
@@ -42,12 +48,18 @@ namespace DNT.IDP.Controllers.UserRegistration
             }
 
             // create user + claims
-            var userToCreate = new User
-            {
-                Password = model.Password.GetSha256Hash(),
-                Username = model.Username,
-                IsActive = true
-            };
+            var userToCreate = model.IsProvisioningFromExternal
+                    ? new User
+                    {
+                        Username = model.Username,
+                        IsActive = true
+                    }
+                    : new User
+                    {
+                        Password = model.Password.GetSha256Hash(),
+                        Username = model.Username,
+                        IsActive = true
+                    };
             userToCreate.UserClaims.Add(new UserClaim("country", model.Country));
             userToCreate.UserClaims.Add(new UserClaim("address", model.Address));
             userToCreate.UserClaims.Add(new UserClaim("given_name", model.Firstname));
@@ -55,18 +67,29 @@ namespace DNT.IDP.Controllers.UserRegistration
             userToCreate.UserClaims.Add(new UserClaim("email", model.Email));
             userToCreate.UserClaims.Add(new UserClaim("subscriptionlevel", "FreeUser"));
 
+            if (model.IsProvisioningFromExternal)
+            {
+                userToCreate.UserLogins.Add(new UserLogin
+                {
+                    LoginProvider = model.Provider,
+                    ProviderKey = model.ProviderUserId
+                });
+            }
+
             // add it through the repository
             await _usersService.AddUserAsync(userToCreate);
 
-            // log the user in
-            // issue authentication cookie with subject ID and username
-            var props = new AuthenticationProperties
+            if (!model.IsProvisioningFromExternal)
             {
-                IsPersistent = false,
-                ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
-            };
-            await HttpContext.SignInAsync(userToCreate.SubjectId, userToCreate.Username, props);
-
+                // log the user in
+                // issue authentication cookie with subject ID and username
+                var props = new AuthenticationProperties
+                {
+                    IsPersistent = false,
+                    ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
+                };
+                await HttpContext.SignInAsync(userToCreate.SubjectId, userToCreate.Username, props);
+            }
 
             // continue with the flow     
             if (_interaction.IsValidReturnUrl(model.ReturnUrl) || Url.IsLocalUrl(model.ReturnUrl))

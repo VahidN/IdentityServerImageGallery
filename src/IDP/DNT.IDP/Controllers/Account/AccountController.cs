@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using DNT.IDP.Services;
 using IdentityModel;
@@ -12,11 +13,11 @@ using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using IdentityServer4.Stores;
-using IdentityServer4.Test;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace DNT.IDP.Controllers.Account
 {
@@ -29,8 +30,8 @@ namespace DNT.IDP.Controllers.Account
     [AllowAnonymous]
     public class AccountController : Controller
     {
-        private readonly TestUserStore _users;
         private readonly IUsersService _usersService;
+        private readonly ILogger<AccountController> _logger;
         private readonly IIdentityServerInteractionService _interaction;
         private readonly IClientStore _clientStore;
         private readonly IAuthenticationSchemeProvider _schemeProvider;
@@ -41,9 +42,11 @@ namespace DNT.IDP.Controllers.Account
             IClientStore clientStore,
             IAuthenticationSchemeProvider schemeProvider,
             IEventService events,
-            IUsersService usersService)
+            IUsersService usersService,
+            ILogger<AccountController> logger)
         {
             _usersService = usersService;
+            _logger = logger;
             _interaction = interaction;
             _clientStore = clientStore;
             _schemeProvider = schemeProvider;
@@ -62,7 +65,7 @@ namespace DNT.IDP.Controllers.Account
             if (vm.IsExternalLoginOnly)
             {
                 // we only have one option for logging in and it's an external provider
-                return RedirectToAction("Challenge", "External", new { provider = vm.ExternalLoginScheme, returnUrl });
+                return RedirectToAction("Challenge", "External", new {provider = vm.ExternalLoginScheme, returnUrl});
             }
 
             return View(vm);
@@ -93,7 +96,7 @@ namespace DNT.IDP.Controllers.Account
                     {
                         // if the client is PKCE then we assume it's native, so this change in how to
                         // return the response is for better UX for the end user.
-                        return View("Redirect", new RedirectViewModel { RedirectUrl = model.ReturnUrl });
+                        return View("Redirect", new RedirectViewModel {RedirectUrl = model.ReturnUrl});
                     }
 
                     return Redirect(model.ReturnUrl);
@@ -122,7 +125,7 @@ namespace DNT.IDP.Controllers.Account
                             IsPersistent = true,
                             ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
                         };
-                    };
+                    }
 
                     // issue authentication cookie with subject ID and username
                     await HttpContext.SignInAsync(user.SubjectId, user.Username, props);
@@ -133,7 +136,7 @@ namespace DNT.IDP.Controllers.Account
                         {
                             // if the client is PKCE then we assume it's native, so this change in how to
                             // return the response is for better UX for the end user.
-                            return View("Redirect", new RedirectViewModel { RedirectUrl = model.ReturnUrl });
+                            return View("Redirect", new RedirectViewModel {RedirectUrl = model.ReturnUrl});
                         }
 
                         // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
@@ -165,7 +168,7 @@ namespace DNT.IDP.Controllers.Account
             return View(vm);
         }
 
-        
+
         /// <summary>
         /// Show logout page
         /// </summary>
@@ -200,8 +203,15 @@ namespace DNT.IDP.Controllers.Account
                 // delete local authentication cookie
                 await HttpContext.SignOutAsync();
 
-                // raise the logout event
-                await _events.RaiseAsync(new UserLogoutSuccessEvent(User.GetSubjectId(), User.GetDisplayName()));
+                if (User is WindowsPrincipal wp)
+                {
+                    await _events.RaiseAsync(new UserLogoutSuccessEvent(wp.Identity.Name, wp.Identity.Name));
+                }
+                else
+                {
+                    // raise the logout event
+                    await _events.RaiseAsync(new UserLogoutSuccessEvent(User.GetSubjectId(), User.GetDisplayName()));
+                }
             }
 
             // check if we need to trigger sign-out at an upstream identity provider
@@ -210,15 +220,14 @@ namespace DNT.IDP.Controllers.Account
                 // build a return URL so the upstream provider will redirect back
                 // to us after the user has logged out. this allows us to then
                 // complete our single sign-out processing.
-                string url = Url.Action("Logout", new { logoutId = vm.LogoutId });
+                string url = Url.Action("Logout", new {logoutId = vm.LogoutId});
 
                 // this triggers a redirect to the external provider for sign-out
-                return SignOut(new AuthenticationProperties { RedirectUri = url }, vm.ExternalAuthenticationScheme);
+                return SignOut(new AuthenticationProperties {RedirectUri = url}, vm.ExternalAuthenticationScheme);
             }
 
             return View("LoggedOut", vm);
         }
-
 
 
         /*****************************************/
@@ -229,25 +238,31 @@ namespace DNT.IDP.Controllers.Account
             var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
             if (context?.IdP != null)
             {
-                // this is meant to short circuit the UI and only trigger the one external IdP
+                _logger.LogInformation("this is meant to short circuit the UI and only trigger the one external IdP");
                 return new LoginViewModel
                 {
                     EnableLocalLogin = false,
                     ReturnUrl = returnUrl,
-                    Username = context?.LoginHint,
-                    ExternalProviders = new ExternalProvider[] { new ExternalProvider { AuthenticationScheme = context.IdP } }
+                    Username = context.LoginHint,
+                    ExternalProviders = new[] {new ExternalProvider {AuthenticationScheme = context.IdP}}
                 };
             }
 
-            var schemes = await _schemeProvider.GetAllSchemesAsync();
+            var schemes = (await _schemeProvider.GetAllSchemesAsync()).ToList();
+            foreach (var scheme in schemes)
+            {
+                _logger.LogInformation(
+                    $"ExternalProvider Scheme -> {scheme.Name}:{scheme.DisplayName}:{scheme.HandlerType}");
+            }
 
             var providers = schemes
                 .Where(x => x.DisplayName != null ||
-                            (x.Name.Equals(AccountOptions.WindowsAuthenticationSchemeName, StringComparison.OrdinalIgnoreCase))
+                            (x.Name.Equals(AccountOptions.WindowsAuthenticationSchemeName,
+                                StringComparison.OrdinalIgnoreCase))
                 )
                 .Select(x => new ExternalProvider
                 {
-                    DisplayName = x.DisplayName,
+                    DisplayName = x.DisplayName ?? x.Name,
                     AuthenticationScheme = x.Name
                 }).ToList();
 
@@ -261,7 +276,8 @@ namespace DNT.IDP.Controllers.Account
 
                     if (client.IdentityProviderRestrictions != null && client.IdentityProviderRestrictions.Any())
                     {
-                        providers = providers.Where(provider => client.IdentityProviderRestrictions.Contains(provider.AuthenticationScheme)).ToList();
+                        providers = providers.Where(provider =>
+                            client.IdentityProviderRestrictions.Contains(provider.AuthenticationScheme)).ToList();
                     }
                 }
             }
@@ -286,7 +302,7 @@ namespace DNT.IDP.Controllers.Account
 
         private async Task<LogoutViewModel> BuildLogoutViewModelAsync(string logoutId)
         {
-            var vm = new LogoutViewModel { LogoutId = logoutId, ShowLogoutPrompt = AccountOptions.ShowLogoutPrompt };
+            var vm = new LogoutViewModel {LogoutId = logoutId, ShowLogoutPrompt = AccountOptions.ShowLogoutPrompt};
 
             if (User?.Identity.IsAuthenticated != true)
             {
@@ -317,7 +333,7 @@ namespace DNT.IDP.Controllers.Account
             {
                 AutomaticRedirectAfterSignOut = AccountOptions.AutomaticRedirectAfterSignOut,
                 PostLogoutRedirectUri = logout?.PostLogoutRedirectUri,
-                ClientName = string.IsNullOrEmpty(logout?.ClientName) ? logout?.ClientId : logout?.ClientName,
+                ClientName = string.IsNullOrEmpty(logout?.ClientName) ? logout?.ClientId : logout.ClientName,
                 SignOutIframeUrl = logout?.SignOutIFrameUrl,
                 LogoutId = logoutId
             };

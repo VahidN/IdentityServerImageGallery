@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace DNT.IDP.Controllers.UserRegistration
 {
-    public class RegisterUserViewModel
+    public class RegisterUserViewModel : RegistrationInputModel
     {
         // credentials       
         [MaxLength(100)]
@@ -40,8 +40,5 @@ namespace DNT.IDP.Controllers.UserRegistration
                     new { Id = "US", Value = "United States of America" },
                     new { Id = "IN", Value = "India" } 
                 }, "Id", "Value");
-
-        public string ReturnUrl { get; set; }
-
     }
 }

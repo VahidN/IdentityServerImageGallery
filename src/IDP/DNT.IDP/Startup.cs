@@ -5,6 +5,7 @@ using DNT.IDP.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,7 @@ namespace DNT.IDP
         }
 
         public IConfiguration Configuration { get; }
-        
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IUnitOfWork, ApplicationDbContext>();
@@ -29,23 +30,30 @@ namespace DNT.IDP
             {
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")
-                        .Replace("|DataDirectory|", Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "app_data")),
+                        .Replace("|DataDirectory|",
+                            Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "app_data")),
                     serverDbContextOptionsBuilder =>
                     {
-                        var minutes = (int)TimeSpan.FromMinutes(3).TotalSeconds;
+                        var minutes = (int) TimeSpan.FromMinutes(3).TotalSeconds;
                         serverDbContextOptionsBuilder.CommandTimeout(minutes);
                         serverDbContextOptionsBuilder.EnableRetryOnFailure();
                     });
             });
-            
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddIdentityServer()
-             .AddDeveloperSigningCredential()
-             .AddCustomUserStore()
-             .AddInMemoryIdentityResources(Config.GetIdentityResources())
-             .AddInMemoryApiResources(Config.GetApiResources())
-             .AddInMemoryClients(Config.GetClients());
+                .AddDeveloperSigningCredential()
+                .AddCustomUserStore()
+                .AddInMemoryIdentityResources(Config.GetIdentityResources())
+                .AddInMemoryApiResources(Config.GetApiResources())
+                .AddInMemoryClients(Config.GetClients());
+
+            services.Configure<IISOptions>(iis =>
+            {
+                iis.AuthenticationDisplayName = "Windows Account";
+                iis.AutomaticAuthentication = false;
+            });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -58,9 +66,9 @@ namespace DNT.IDP
             {
                 app.UseHsts();
             }
-            
+
             initializeDb(app);
-            
+
             app.UseHttpsRedirection();
 
             app.UseIdentityServer();
@@ -68,7 +76,7 @@ namespace DNT.IDP
             app.UseStaticFiles();
             app.UseMvcWithDefaultRoute();
         }
-        
+
         private static void initializeDb(IApplicationBuilder app)
         {
             var scopeFactory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
