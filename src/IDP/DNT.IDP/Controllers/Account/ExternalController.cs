@@ -60,19 +60,19 @@ namespace DNT.IDP.Controllers.Account
 
             if (AccountOptions.WindowsAuthenticationSchemeName == provider)
             {
-               _logger.LogInformation("windows authentication needs special handling");
+                _logger.LogInformation("windows authentication needs special handling");
                 return await ProcessWindowsLoginAsync(returnUrl);
             }
             else
             {
-                _logger.LogInformation("start challenge and roundtrip the return URL and scheme"); 
+                _logger.LogInformation("start challenge and roundtrip the return URL and scheme");
                 var props = new AuthenticationProperties
                 {
                     RedirectUri = Url.Action(nameof(Callback)),
                     Items =
                     {
-                        { "returnUrl", returnUrl },
-                        { "scheme", provider },
+                        {"returnUrl", returnUrl},
+                        {"scheme", provider},
                     }
                 };
 
@@ -87,22 +87,53 @@ namespace DNT.IDP.Controllers.Account
         public async Task<IActionResult> Callback()
         {
             // read external identity from the temporary cookie
-            var result = await HttpContext.AuthenticateAsync(IdentityServer4.IdentityServerConstants.ExternalCookieAuthenticationScheme);
+            var result =
+                await HttpContext.AuthenticateAsync(IdentityServer4.IdentityServerConstants
+                    .ExternalCookieAuthenticationScheme);
             if (result?.Succeeded != true)
             {
                 throw new Exception("External authentication error");
             }
-            
+
             // retrieve return URL
             var returnUrl = result.Properties.Items["returnUrl"] ?? "~/";
 
             // lookup our user and external provider info
             var (user, provider, providerUserId, claims) = await FindUserFromExternalProvider(result);
+            
+            foreach (var claim in claims)
+            {
+                _logger.LogInformation($"External provider[{provider}] info-> claim:{claim.Type}, value:{claim.Value}");
+            }
+            
             if (user == null)
             {
-                var returnUrlAfterRegistration = Url.Action("Callback", new { returnUrl = returnUrl });
-                var continueWithUrl = Url.Action("RegisterUser", "UserRegistration" ,
-                    new { returnUrl = returnUrlAfterRegistration, provider = provider, providerUserId = providerUserId });
+                // user wasn't found by provider, but maybe one exists with the same email address?  
+                if (provider == "Google" || provider == "Facebook")
+                {
+                    // email claim from Google
+                    var email = claims.FirstOrDefault(c =>
+                        c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress");
+                    if (email != null)
+                    {
+                        var userByEmail = await _usersService.GetUserByEmailAsync(email.Value);
+                        if (userByEmail != null)
+                        {
+                            // add Google as a provider for this user
+                            await _usersService.AddUserLoginAsync(userByEmail.SubjectId, provider, providerUserId);
+
+                            // redirect to ExternalLoginCallback
+                            var continueWithUrlAfterAddingUserLogin =
+                                Url.Action("Callback", new {returnUrl = returnUrl});
+                            return Redirect(continueWithUrlAfterAddingUserLogin);
+                        }
+                    }
+                }
+
+
+                var returnUrlAfterRegistration = Url.Action("Callback", new {returnUrl = returnUrl});
+                var continueWithUrl = Url.Action("RegisterUser", "UserRegistration",
+                    new {returnUrl = returnUrlAfterRegistration, provider = provider, providerUserId = providerUserId});
                 return Redirect(continueWithUrl);
             }
 
@@ -116,8 +147,10 @@ namespace DNT.IDP.Controllers.Account
             ProcessLoginCallbackForSaml2p(result, additionalLocalClaims, localSignInProps);
 
             // issue authentication cookie for user
-            await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.SubjectId, user.Username));
-            await HttpContext.SignInAsync(user.SubjectId, user.Username, provider, localSignInProps, additionalLocalClaims.ToArray());
+            await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.SubjectId,
+                user.Username));
+            await HttpContext.SignInAsync(user.SubjectId, user.Username, provider, localSignInProps,
+                additionalLocalClaims.ToArray());
 
             // delete temporary cookie used during external authentication
             await HttpContext.SignOutAsync(IdentityServer4.IdentityServerConstants.ExternalCookieAuthenticationScheme);
@@ -130,7 +163,7 @@ namespace DNT.IDP.Controllers.Account
                 {
                     // if the client is PKCE then we assume it's native, so this change in how to
                     // return the response is for better UX for the end user.
-                    return View("Redirect", new RedirectViewModel { RedirectUrl = returnUrl });
+                    return View("Redirect", new RedirectViewModel {RedirectUrl = returnUrl});
                 }
             }
 
@@ -151,8 +184,8 @@ namespace DNT.IDP.Controllers.Account
                     RedirectUri = Url.Action("Callback"),
                     Items =
                     {
-                        { "returnUrl", returnUrl },
-                        { "scheme", AccountOptions.WindowsAuthenticationSchemeName },
+                        {"returnUrl", returnUrl},
+                        {"scheme", AccountOptions.WindowsAuthenticationSchemeName},
                     }
                 };
 
@@ -184,7 +217,8 @@ namespace DNT.IDP.Controllers.Account
             }
         }
 
-        private async Task<(User user, string provider, string providerUserId, IEnumerable<Claim> claims)> FindUserFromExternalProvider(AuthenticateResult result)
+        private async Task<(User user, string provider, string providerUserId, IList<Claim> claims)>
+            FindUserFromExternalProvider(AuthenticateResult result)
         {
             var externalUser = result.Principal;
 
@@ -208,7 +242,8 @@ namespace DNT.IDP.Controllers.Account
             return (user, provider, providerUserId, claims);
         }
 
-        private void ProcessLoginCallbackForOidc(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps)
+        private void ProcessLoginCallbackForOidc(AuthenticateResult externalResult, List<Claim> localClaims,
+            AuthenticationProperties localSignInProps)
         {
             // if the external system sent a session id claim, copy it over
             // so we can use it for single sign-out
@@ -222,15 +257,17 @@ namespace DNT.IDP.Controllers.Account
             var id_token = externalResult.Properties.GetTokenValue("id_token");
             if (id_token != null)
             {
-                localSignInProps.StoreTokens(new[] { new AuthenticationToken { Name = "id_token", Value = id_token } });
+                localSignInProps.StoreTokens(new[] {new AuthenticationToken {Name = "id_token", Value = id_token}});
             }
         }
 
-        private void ProcessLoginCallbackForWsFed(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps)
+        private void ProcessLoginCallbackForWsFed(AuthenticateResult externalResult, List<Claim> localClaims,
+            AuthenticationProperties localSignInProps)
         {
         }
 
-        private void ProcessLoginCallbackForSaml2p(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps)
+        private void ProcessLoginCallbackForSaml2p(AuthenticateResult externalResult, List<Claim> localClaims,
+            AuthenticationProperties localSignInProps)
         {
         }
     }

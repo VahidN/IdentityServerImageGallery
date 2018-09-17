@@ -2,6 +2,7 @@
 using System.IO;
 using DNT.IDP.DataLayer.Context;
 using DNT.IDP.Services;
+using IdentityServer4;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -54,6 +55,14 @@ namespace DNT.IDP
                 iis.AuthenticationDisplayName = "Windows Account";
                 iis.AutomaticAuthentication = false;
             });
+
+            services.AddAuthentication()
+                .AddGoogle(authenticationScheme: "Google", configureOptions: options =>
+                {
+                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                    options.ClientId = Configuration["Authentication:Google:ClientId"];
+                    options.ClientSecret = Configuration["Authentication:Google:ClientSecret"];
+                });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
