@@ -113,6 +113,7 @@ namespace DNT.IDP.Services
                 LoginProvider = loginProvider,
                 ProviderKey = providerKey
             });
+			await _uow.SaveChangesAsync();
         }
 
         public async Task AddUserClaimAsync(string subjectId, string claimType, string claimValue)
@@ -124,6 +125,7 @@ namespace DNT.IDP.Services
             }
 
             user.UserClaims.Add(new UserClaim {ClaimType = claimType, ClaimValue = claimValue});
+			await _uow.SaveChangesAsync();
         }
     }
 }
