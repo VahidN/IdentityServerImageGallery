@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using DNT.IDP.Services;
@@ -32,6 +33,7 @@ namespace DNT.IDP.Controllers.Account
     {
         private readonly IUsersService _usersService;
         private readonly ILogger<AccountController> _logger;
+        private readonly ITwoFactorAuthenticationService _twoFactorAuthenticationService;
         private readonly IIdentityServerInteractionService _interaction;
         private readonly IClientStore _clientStore;
         private readonly IAuthenticationSchemeProvider _schemeProvider;
@@ -43,10 +45,12 @@ namespace DNT.IDP.Controllers.Account
             IAuthenticationSchemeProvider schemeProvider,
             IEventService events,
             IUsersService usersService,
-            ILogger<AccountController> logger)
+            ILogger<AccountController> logger,
+            ITwoFactorAuthenticationService twoFactorAuthenticationService)
         {
             _usersService = usersService;
             _logger = logger;
+            _twoFactorAuthenticationService = twoFactorAuthenticationService;
             _interaction = interaction;
             _clientStore = clientStore;
             _schemeProvider = schemeProvider;
@@ -113,50 +117,37 @@ namespace DNT.IDP.Controllers.Account
                 if (await _usersService.AreUserCredentialsValidAsync(model.Username, model.Password))
                 {
                     var user = await _usersService.GetUserByUsernameAsync(model.Username);
-                    await _events.RaiseAsync(new UserLoginSuccessEvent(user.Username, user.SubjectId, user.Username));
+                    
+                    // 2-F.A
+                    var id = new ClaimsIdentity();
+                    id.AddClaim(new Claim(JwtClaimTypes.Subject, user.SubjectId));
+                    await HttpContext.SignInAsync(scheme: Startup.TwoFactorAuthenticationScheme,
+                        principal: new ClaimsPrincipal(id));
 
-                    // only set explicit expiration here if user chooses "remember me". 
-                    // otherwise we rely upon expiration configured in cookie middleware.
-                    AuthenticationProperties props = null;
-                    if (AccountOptions.AllowRememberLogin && model.RememberLogin)
-                    {
-                        props = new AuthenticationProperties
-                        {
-                            IsPersistent = true,
-                            ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
-                        };
-                    }
+                    await _twoFactorAuthenticationService.SendTemporaryCodeAsync(user.SubjectId);
 
-                    // issue authentication cookie with subject ID and username
-                    await HttpContext.SignInAsync(user.SubjectId, user.Username, props);
-
-                    if (context != null)
-                    {
-                        if (await _clientStore.IsPkceClientAsync(context.ClientId))
-                        {
-                            // if the client is PKCE then we assume it's native, so this change in how to
-                            // return the response is for better UX for the end user.
-                            return View("Redirect", new RedirectViewModel {RedirectUrl = model.ReturnUrl});
-                        }
-
-                        // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
-                        return Redirect(model.ReturnUrl);
-                    }
+                    var redirectToAdditionalFactorUrl =
+                        Url.Action("AdditionalAuthenticationFactor",
+                            new
+                            {
+                                returnUrl = model.ReturnUrl,
+                                rememberLogin = model.RememberLogin
+                            });
 
                     // request for a local page
                     if (Url.IsLocalUrl(model.ReturnUrl))
                     {
-                        return Redirect(model.ReturnUrl);
+                        //return Redirect(model.ReturnUrl);
+                        return Redirect(redirectToAdditionalFactorUrl);
                     }
-                    else if (string.IsNullOrEmpty(model.ReturnUrl))
+
+                    if (string.IsNullOrEmpty(model.ReturnUrl))
                     {
                         return Redirect("~/");
                     }
-                    else
-                    {
-                        // user might have clicked on a malicious link - should be logged
-                        throw new Exception("invalid return URL");
-                    }
+
+                    // user might have clicked on a malicious link - should be logged
+                    throw new Exception("invalid return URL");
                 }
 
                 await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials"));
@@ -166,6 +157,71 @@ namespace DNT.IDP.Controllers.Account
             // something went wrong, show form with error
             var vm = await BuildLoginViewModelAsync(model);
             return View(vm);
+        }
+
+        [HttpGet]
+        public IActionResult AdditionalAuthenticationFactor(string returnUrl, bool rememberLogin)
+        {
+            // create VM
+            var vm = new AdditionalAuthenticationFactorViewModel
+            {
+                RememberLogin = rememberLogin,
+                ReturnUrl = returnUrl
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdditionalAuthenticationFactor(
+            AdditionalAuthenticationFactorViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // read identity from the temporary cookie
+            var info = await HttpContext.AuthenticateAsync(Startup.TwoFactorAuthenticationScheme);
+            var tempUser = info?.Principal;
+            if (tempUser == null)
+            {
+                throw new Exception("2FA error");
+            }
+
+            // ... check code for user
+            if (!await _twoFactorAuthenticationService.IsValidTemporaryCodeAsync(tempUser.GetSubjectId(), model.Code))
+            {
+                ModelState.AddModelError("code", "2FA code is invalid.");
+                return View(model);
+            }
+
+            // login the user
+            AuthenticationProperties props = null;
+            if (AccountOptions.AllowRememberLogin && model.RememberLogin)
+            {
+                props = new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
+                };
+            }
+
+            // issue authentication cookie for user
+            var user = await _usersService.GetUserBySubjectIdAsync(tempUser.GetSubjectId());
+            await _events.RaiseAsync(new UserLoginSuccessEvent(user.Username, user.SubjectId, user.Username));
+            await HttpContext.SignInAsync(user.SubjectId, user.Username, props);
+
+            // delete temporary cookie used for 2FA
+            await HttpContext.SignOutAsync(Startup.TwoFactorAuthenticationScheme);
+
+            if (_interaction.IsValidReturnUrl(model.ReturnUrl) || Url.IsLocalUrl(model.ReturnUrl))
+            {
+                return Redirect(model.ReturnUrl);
+            }
+
+            return Redirect("~/");
         }
 
 

@@ -8,6 +8,7 @@ using DNT.IDP.DomainClasses;
 using DNT.IDP.Services;
 using IdentityModel;
 using IdentityServer4.Events;
+using IdentityServer4.Extensions;
 using IdentityServer4.Services;
 using IdentityServer4.Stores;
 using IdentityServer4.Test;
@@ -28,19 +29,22 @@ namespace DNT.IDP.Controllers.Account
         private readonly IEventService _events;
         private readonly IUsersService _usersService;
         private readonly ILogger<ExternalController> _logger;
+        private readonly ITwoFactorAuthenticationService _twoFactorAuthenticationService;
 
         public ExternalController(
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IEventService events,
             IUsersService usersService,
-            ILogger<ExternalController> logger)
+            ILogger<ExternalController> logger,
+            ITwoFactorAuthenticationService twoFactorAuthenticationService)
         {
             _interaction = interaction;
             _clientStore = clientStore;
             _events = events;
             _usersService = usersService;
             _logger = logger;
+            _twoFactorAuthenticationService = twoFactorAuthenticationService;
         }
 
         /// <summary>
@@ -100,12 +104,12 @@ namespace DNT.IDP.Controllers.Account
 
             // lookup our user and external provider info
             var (user, provider, providerUserId, claims) = await FindUserFromExternalProvider(result);
-            
+
             foreach (var claim in claims)
             {
                 _logger.LogInformation($"External provider[{provider}] info-> claim:{claim.Type}, value:{claim.Value}");
             }
-            
+
             if (user == null)
             {
                 // user wasn't found by provider, but maybe one exists with the same email address?  
@@ -137,9 +141,92 @@ namespace DNT.IDP.Controllers.Account
                 return Redirect(continueWithUrl);
             }
 
-            // this allows us to collect any additonal claims or properties
-            // for the specific prtotocols used and store them in the local auth cookie.
+            // 2-F.A
+            var id = new ClaimsIdentity();
+            id.AddClaim(new Claim(JwtClaimTypes.Subject, user.SubjectId));
+            await HttpContext.SignInAsync(scheme: Startup.TwoFactorAuthenticationScheme,
+                principal: new ClaimsPrincipal(id));
+
+            await _twoFactorAuthenticationService.SendTemporaryCodeAsync(user.SubjectId);
+
+            var redirectToAdditionalFactorUrl =
+                Url.Action("AdditionalAuthenticationFactor",
+                    new
+                    {
+                        returnUrl = returnUrl,
+                        rememberLogin = false,
+                        provider = provider,
+                        providerUserId = providerUserId
+                    });
+
+            if (Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(redirectToAdditionalFactorUrl);
+            }
+
+            if (string.IsNullOrEmpty(returnUrl))
+            {
+                return Redirect("~/");
+            }
+
+            // user might have clicked on a malicious link - should be logged
+            throw new Exception("invalid return URL");
+        }
+
+        [HttpGet]
+        public IActionResult AdditionalAuthenticationFactor(
+            string returnUrl, bool rememberLogin, string provider, string providerUserId)
+        {
+            // create VM
+            var vm = new AdditionalAuthenticationFactorViewModel
+            {
+                RememberLogin = rememberLogin,
+                ReturnUrl = returnUrl,
+                Provider = provider,
+                ProviderUserId = providerUserId
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdditionalAuthenticationFactor(
+            AdditionalAuthenticationFactorViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // read identity from the temporary cookie
+            var info = await HttpContext.AuthenticateAsync(Startup.TwoFactorAuthenticationScheme);
+            var tempUser = info?.Principal;
+            if (tempUser == null)
+            {
+                throw new Exception("2FA error");
+            }
+
+            // ... check code for user
+            if (!await _twoFactorAuthenticationService.IsValidTemporaryCodeAsync(tempUser.GetSubjectId(), model.Code))
+            {
+                ModelState.AddModelError("code", "2FA code is invalid.");
+                return View(model);
+            }
+
+            // this allows us to collect any additional claims or properties
+            // for the specific protocols used and store them in the local auth cookie.
             // this is typically used to store data needed for signout from those protocols.
+
+            // read external identity from the temporary cookie
+            var result =
+                await HttpContext.AuthenticateAsync(IdentityServer4.IdentityServerConstants
+                    .ExternalCookieAuthenticationScheme);
+            if (result?.Succeeded != true)
+            {
+                throw new Exception("External authentication error");
+            }
+
             var additionalLocalClaims = new List<Claim>();
             var localSignInProps = new AuthenticationProperties();
             ProcessLoginCallbackForOidc(result, additionalLocalClaims, localSignInProps);
@@ -147,28 +234,33 @@ namespace DNT.IDP.Controllers.Account
             ProcessLoginCallbackForSaml2p(result, additionalLocalClaims, localSignInProps);
 
             // issue authentication cookie for user
-            await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.SubjectId,
+            var user = await _usersService.GetUserBySubjectIdAsync(tempUser.GetSubjectId());
+            await _events.RaiseAsync(new UserLoginSuccessEvent(model.Provider, model.ProviderUserId, user.SubjectId,
                 user.Username));
-            await HttpContext.SignInAsync(user.SubjectId, user.Username, provider, localSignInProps,
+            await HttpContext.SignInAsync(user.SubjectId, user.Username, model.Provider, localSignInProps,
                 additionalLocalClaims.ToArray());
 
             // delete temporary cookie used during external authentication
             await HttpContext.SignOutAsync(IdentityServer4.IdentityServerConstants.ExternalCookieAuthenticationScheme);
 
+            // delete temporary cookie used for 2FA
+            await HttpContext.SignOutAsync(Startup.TwoFactorAuthenticationScheme);
+
             // check if external login is in the context of an OIDC request
-            var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
+            var context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
             if (context != null)
             {
                 if (await _clientStore.IsPkceClientAsync(context.ClientId))
                 {
                     // if the client is PKCE then we assume it's native, so this change in how to
                     // return the response is for better UX for the end user.
-                    return View("Redirect", new RedirectViewModel {RedirectUrl = returnUrl});
+                    return View("Redirect", new RedirectViewModel {RedirectUrl = model.ReturnUrl});
                 }
             }
 
-            return Redirect(returnUrl);
+            return Redirect(model.ReturnUrl);
         }
+
 
         private async Task<IActionResult> ProcessWindowsLoginAsync(string returnUrl)
         {
