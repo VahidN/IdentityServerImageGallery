@@ -5,6 +5,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DNT.IDP.Models;
+using DNT.IDP.Utils;
 using IdentityServer4.Events;
 using IdentityServer4.Extensions;
 using IdentityServer4.Services;
@@ -12,7 +14,7 @@ using IdentityServer4.Stores;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DNT.IDP.Controllers.Grants
+namespace DNT.IDP.Controllers
 {
     /// <summary>
     /// This sample controller allows a user to revoke grants given to clients

@@ -4,11 +4,13 @@
 
 using System.Linq;
 using System.Threading.Tasks;
+using DNT.IDP.Models;
+using DNT.IDP.Utils;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DNT.IDP.Controllers.Diagnostics
+namespace DNT.IDP.Controllers
 {
     [SecurityHeaders]
     [Authorize]

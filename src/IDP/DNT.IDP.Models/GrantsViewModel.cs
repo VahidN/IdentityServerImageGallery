@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DNT.IDP.Controllers.Grants
+namespace DNT.IDP.Models
 {
     public class GrantsViewModel
     {

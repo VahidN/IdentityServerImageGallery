@@ -13,5 +13,6 @@
   <ItemGroup>
     <ProjectReference Include="..\DNT.IDP.DataLayer\DNT.IDP.DataLayer.csproj" />
     <ProjectReference Include="..\DNT.IDP.Services\DNT.IDP.Services.csproj" />
+    <ProjectReference Include="..\DNT.IDP.Models\DNT.IDP.Models.csproj" />
   </ItemGroup>
 </Project>

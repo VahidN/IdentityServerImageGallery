@@ -4,7 +4,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace DNT.IDP.Controllers.Account
+namespace DNT.IDP.Models
 {
     public class LoginInputModel
     {

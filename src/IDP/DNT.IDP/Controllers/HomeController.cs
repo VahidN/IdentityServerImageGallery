@@ -3,12 +3,14 @@
 
 
 using System.Threading.Tasks;
+using DNT.IDP.Models;
+using DNT.IDP.Utils;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DNT.IDP.Controllers.Home
+namespace DNT.IDP.Controllers
 {
     [SecurityHeaders]
     [AllowAnonymous]

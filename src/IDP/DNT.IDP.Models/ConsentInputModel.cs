@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 
-namespace DNT.IDP.Controllers.Consent
+namespace DNT.IDP.Models
 {
     public class ConsentInputModel
     {

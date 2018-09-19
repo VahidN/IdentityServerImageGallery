@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using IdentityServer4.Stores;
 
-namespace DNT.IDP.Controllers
+namespace DNT.IDP.Utils
 {
     public static class Extensions
     {

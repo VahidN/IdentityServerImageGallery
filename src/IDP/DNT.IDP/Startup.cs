@@ -2,11 +2,12 @@
 using System.IO;
 using DNT.IDP.DataLayer.Context;
 using DNT.IDP.Services;
+using DNT.IDP.Settings;
+using DNT.IDP.Utils;
 using IdentityServer4;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,8 @@ namespace DNT.IDP
 {
     public class Startup
     {
+        public const string TwoFactorAuthenticationScheme = "idsrv.2FA";
+        
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -26,6 +29,11 @@ namespace DNT.IDP
         {
             services.AddScoped<IUnitOfWork, ApplicationDbContext>();
             services.AddScoped<IUsersService, UsersService>();
+            services.AddScoped<IUserClaimsService, UserClaimsService>();
+
+            services.AddSingleton<IRandomNumberProvider, RandomNumberProvider>();
+            services.AddScoped<ITwoFactorAuthenticationService, TwoFactorAuthenticationService>();
+
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {
@@ -57,6 +65,7 @@ namespace DNT.IDP
             });
 
             services.AddAuthentication()
+                .AddCookie(authenticationScheme: TwoFactorAuthenticationScheme)
                 .AddGoogle(authenticationScheme: "Google", configureOptions: options =>
                 {
                     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;

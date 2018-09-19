@@ -4,7 +4,9 @@
 
 using System.Linq;
 using System.Threading.Tasks;
-using DNT.IDP.Controllers.Account;
+using DNT.IDP.Models;
+using DNT.IDP.Settings;
+using DNT.IDP.Utils;
 using IdentityServer4.Events;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
@@ -14,7 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace DNT.IDP.Controllers.Consent
+namespace DNT.IDP.Controllers
 {
     /// <summary>
     /// This controller processes the consent UI

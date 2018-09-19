@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DNT.IDP.Common;
-using DNT.IDP.Controllers.Account;
 using DNT.IDP.DomainClasses;
+using DNT.IDP.Models;
 using DNT.IDP.Services;
+using DNT.IDP.Settings;
 using IdentityServer4.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
-namespace DNT.IDP.Controllers.UserRegistration
+namespace DNT.IDP.Controllers
 {
     public class UserRegistrationController : Controller
     {

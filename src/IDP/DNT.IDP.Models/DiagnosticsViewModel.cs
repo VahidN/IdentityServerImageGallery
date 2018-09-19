@@ -8,7 +8,7 @@ using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Newtonsoft.Json;
 
-namespace DNT.IDP.Controllers.Diagnostics
+namespace DNT.IDP.Models
 {
     public class DiagnosticsViewModel
     {

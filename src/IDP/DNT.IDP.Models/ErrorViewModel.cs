@@ -4,7 +4,7 @@
 
 using IdentityServer4.Models;
 
-namespace DNT.IDP.Controllers.Home
+namespace DNT.IDP.Models
 {
     public class ErrorViewModel
     {

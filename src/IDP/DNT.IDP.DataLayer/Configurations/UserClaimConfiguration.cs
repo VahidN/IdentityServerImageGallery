@@ -32,6 +32,8 @@ namespace DNT.IDP.DataLayer.Configurations
             builder.HasOne(userClaim => userClaim.User)
                 .WithMany(user => user.UserClaims)
                 .HasForeignKey(userClaim => userClaim.SubjectId);
+
+            builder.HasIndex(userClaim => new { userClaim.SubjectId, userClaim.ClaimType }).IsUnique();
         }
     }
 }

@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DNT.IDP.Controllers.Account
+namespace DNT.IDP.Models
 {
     public class LoginViewModel : LoginInputModel
     {

@@ -5,7 +5,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace DNT.IDP.Controllers
+namespace DNT.IDP.Utils
 {
     public class SecurityHeadersAttribute : ActionFilterAttribute
     {

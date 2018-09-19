@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-namespace DNT.IDP.Controllers.Consent
+namespace DNT.IDP.Settings
 {
-    public class ConsentOptions
+    public static class ConsentOptions
     {
         public static bool EnableOfflineAccess = true;
         public static string OfflineAccessDisplayName = "Offline Access";

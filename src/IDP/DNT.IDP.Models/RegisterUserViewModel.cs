@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace DNT.IDP.Controllers.UserRegistration
+namespace DNT.IDP.Models
 {
     public class RegisterUserViewModel : RegistrationInputModel
     {

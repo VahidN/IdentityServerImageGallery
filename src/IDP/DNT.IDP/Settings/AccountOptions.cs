@@ -4,9 +4,9 @@
 
 using System;
 
-namespace DNT.IDP.Controllers.Account
+namespace DNT.IDP.Settings
 {
-    public class AccountOptions
+    public static class AccountOptions
     {
         public static bool AllowLocalLogin = true;
         public static bool AllowRememberLogin = true;

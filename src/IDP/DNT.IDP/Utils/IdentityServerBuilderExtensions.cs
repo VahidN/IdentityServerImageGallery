@@ -1,7 +1,7 @@
 ﻿using DNT.IDP.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DNT.IDP
+namespace DNT.IDP.Utils
 {
     public static class IdentityServerBuilderExtensions
     {

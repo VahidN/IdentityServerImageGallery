@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-public class AuthorizationController : Controller
+namespace ImageGallery.MvcClient.WebApp.Controllers
 {
-    public IActionResult AccessDenied()
+    public class AuthorizationController : Controller
     {
-        return View();
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
     }
 }

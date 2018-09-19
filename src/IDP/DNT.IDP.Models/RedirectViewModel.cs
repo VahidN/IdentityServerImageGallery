@@ -3,7 +3,7 @@
 
 
 
-namespace DNT.IDP.Controllers.Account
+namespace DNT.IDP.Models
 {
     public class RedirectViewModel
     {

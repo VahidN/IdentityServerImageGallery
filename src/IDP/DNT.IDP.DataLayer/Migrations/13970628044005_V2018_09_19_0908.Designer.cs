@@ -3,14 +3,16 @@ using DNT.IDP.DataLayer.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DNT.IDP.DataLayer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("13970628044005_V2018_09_19_0908")]
+    partial class V2018_09_19_0908
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -104,8 +106,7 @@ namespace DNT.IDP.DataLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SubjectId", "LoginProvider")
-                        .IsUnique();
+                    b.HasIndex("SubjectId");
 
                     b.ToTable("UserLogins");
                 });

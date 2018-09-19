@@ -1,4 +1,4 @@
-namespace DNT.IDP.Controllers.UserRegistration
+namespace DNT.IDP.Models
 {
     public class RegistrationInputModel
     {

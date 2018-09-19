@@ -9,8 +9,10 @@ namespace DNT.IDP.DataLayer.Configurations
         public void Configure(EntityTypeBuilder<UserLogin> builder)
         {
             builder.HasOne(userLogin => userLogin.User)
-                   .WithMany(user => user.UserLogins)
-                   .HasForeignKey(userLogin => userLogin.SubjectId);   
+                .WithMany(user => user.UserLogins)
+                .HasForeignKey(userLogin => userLogin.SubjectId);
+
+            builder.HasIndex(userLogin => new {userLogin.SubjectId, userLogin.LoginProvider}).IsUnique();
         }
     }
 }

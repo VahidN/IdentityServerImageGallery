@@ -5,20 +5,22 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using DNT.IDP.DomainClasses;
+using DNT.IDP.Models;
 using DNT.IDP.Services;
+using DNT.IDP.Settings;
+using DNT.IDP.Utils;
 using IdentityModel;
 using IdentityServer4.Events;
 using IdentityServer4.Extensions;
 using IdentityServer4.Services;
 using IdentityServer4.Stores;
-using IdentityServer4.Test;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace DNT.IDP.Controllers.Account
+namespace DNT.IDP.Controllers
 {
     [SecurityHeaders]
     [AllowAnonymous]

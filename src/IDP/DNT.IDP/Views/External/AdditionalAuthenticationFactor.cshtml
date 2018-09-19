@@ -1,0 +1,37 @@
+﻿@model AdditionalAuthenticationFactorViewModel
+
+<div>
+    <div class="page-header">
+        <h1>2-Factor Authentication</h1>
+    </div>
+
+    <partial name="_ValidationSummary" />
+
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Input your 2FA code</h3>
+            </div>
+            <div class="panel-body">
+                <form asp-route="Login">
+                    <input type="hidden" asp-for="ReturnUrl" />
+                    <input type="hidden" asp-for="RememberLogin" />
+                    <input type="hidden" asp-for="Provider" />
+                    <input type="hidden" asp-for="ProviderUserId" />
+
+                    <fieldset>
+                        <div class="form-group">
+                            <label asp-for="Code"></label>
+                            <input class="form-control" placeholder="Code" asp-for="Code" autofocus>
+                        </div>
+
+                        <div class="form-group">
+                            <button class="btn btn-primary">Submit code</button>
+                        </div>
+                    </fieldset>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
