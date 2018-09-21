@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using DNT.IDP.DataLayer.Context;
+using DNT.IDP.Models;
 using DNT.IDP.Services;
 using DNT.IDP.Settings;
 using DNT.IDP.Utils;
@@ -17,7 +19,7 @@ namespace DNT.IDP
     public class Startup
     {
         public const string TwoFactorAuthenticationScheme = "idsrv.2FA";
-        
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -30,9 +32,13 @@ namespace DNT.IDP
             services.AddScoped<IUnitOfWork, ApplicationDbContext>();
             services.AddScoped<IUsersService, UsersService>();
             services.AddScoped<IUserClaimsService, UserClaimsService>();
+            services.AddScoped<IConfigSeedDataService, ConfigSeedDataService>();
 
             services.AddSingleton<IRandomNumberProvider, RandomNumberProvider>();
             services.AddScoped<ITwoFactorAuthenticationService, TwoFactorAuthenticationService>();
+
+            services.Configure<OperationalStoreOptions>(options =>
+                Configuration.GetSection("OperationalStoreOptions").Bind(options));
 
 
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -52,11 +58,13 @@ namespace DNT.IDP
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddIdentityServer()
-                .AddDeveloperSigningCredential()
+                .AddSigningCredential(
+                    //loadCertificateFromStore()
+                    loadCertificateFromFile()
+                )
                 .AddCustomUserStore()
-                .AddInMemoryIdentityResources(Config.GetIdentityResources())
-                .AddInMemoryApiResources(Config.GetApiResources())
-                .AddInMemoryClients(Config.GetClients());
+                .AddConfigurationStore()
+                .AddOperationalStore();
 
             services.Configure<IISOptions>(iis =>
             {
@@ -86,6 +94,7 @@ namespace DNT.IDP
             }
 
             initializeDb(app);
+            seedDb(app);
 
             app.UseHttpsRedirection();
 
@@ -104,6 +113,53 @@ namespace DNT.IDP
                 {
                     context.Database.Migrate();
                 }
+            }
+        }
+
+        private static void seedDb(IApplicationBuilder app)
+        {
+            var scopeFactory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
+            using (var scope = scopeFactory.CreateScope())
+            {
+                var configSeedDataService = scope.ServiceProvider.GetService<IConfigSeedDataService>();
+                configSeedDataService.EnsureSeedDataForContext(
+                    Config.GetClients(),
+                    Config.GetApiResources(),
+                    Config.GetIdentityResources()
+                );
+            }
+        }
+
+        private X509Certificate2 loadCertificateFromFile()
+        {
+            // NOTE:
+            // You should check out the identity of your application pool and make sure
+            // that the `Load user profile` option is turned on, otherwise the crypto susbsystem won't work.
+            var certificate = new X509Certificate2(
+                fileName: Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "app_data", 
+                    Configuration["X509Certificate:FileName"]),
+                password: Configuration["X509Certificate:Password"],
+                keyStorageFlags: X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet |
+                                 X509KeyStorageFlags.Exportable);
+            return certificate;
+        }
+
+        private X509Certificate2 loadCertificateFromStore()
+        {
+            var thumbPrint = Configuration["CertificateThumbPrint"];
+            using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+            {
+                store.Open(OpenFlags.ReadOnly);
+                var certCollection = store.Certificates.Find(
+                    X509FindType.FindByThumbprint,
+                    thumbPrint,
+                    validOnly: true);
+                if (certCollection.Count == 0)
+                {
+                    throw new Exception("The specified certificate wasn't found.");
+                }
+
+                return certCollection[0];
             }
         }
     }

@@ -6,6 +6,8 @@
     <ProjectReference Include="..\DNT.IDP.DataLayer\DNT.IDP.DataLayer.csproj" />
     <ProjectReference Include="..\DNT.IDP.DomainClasses\DNT.IDP.DomainClasses.csproj" />
     <ProjectReference Include="..\DNT.IDP.Common\DNT.IDP.Common.csproj" />
+    <ProjectReference Include="..\DNT.IDP.Mappings\DNT.IDP.Mappings.csproj" />
+    <ProjectReference Include="..\DNT.IDP.Models\DNT.IDP.Models.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.0" />
