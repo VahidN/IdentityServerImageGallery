@@ -37,7 +37,7 @@ namespace ImageGallery.MvcClient.WebApp.Controllers
             var response = await httpClient.GetAsync("api/images");
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
-                response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                response.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {
                 return RedirectToAction("AccessDenied", "Authorization");
             }

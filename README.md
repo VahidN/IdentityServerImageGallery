@@ -7,6 +7,7 @@ This project is a collection of tips and tricks about how to use IdentityServer 
 How to run it
 -------------
 
+- Install the `src\IDP\DNT.IDP\wwwroot\app_data\idp.pfx` certificate file in `Trusted Root Certification Authorities/Certificates` -> All tasks -> import.
 - First open the `src\IDP\DNT.IDP` folder and then run the following files:
   - _0-restore.bat
   - _1-dotnet_run.bat
