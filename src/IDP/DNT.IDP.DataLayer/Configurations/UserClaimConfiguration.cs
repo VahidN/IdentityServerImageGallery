@@ -33,7 +33,7 @@ namespace DNT.IDP.DataLayer.Configurations
                 .WithMany(user => user.UserClaims)
                 .HasForeignKey(userClaim => userClaim.SubjectId);
 
-            builder.HasIndex(userClaim => new { userClaim.SubjectId, userClaim.ClaimType }).IsUnique();
+            builder.HasIndex(userClaim => new { userClaim.SubjectId, userClaim.ClaimType });
         }
     }
 }
