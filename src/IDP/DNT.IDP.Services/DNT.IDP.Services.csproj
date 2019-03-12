@@ -10,7 +10,7 @@
     <ProjectReference Include="..\DNT.IDP.Models\DNT.IDP.Models.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.0" />
-    <PackageReference Include="IdentityServer4" Version="2.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.3" />
+    <PackageReference Include="IdentityServer4" Version="2.3.2" />
   </ItemGroup>
 </Project>

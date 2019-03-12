@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ImageGallery.WebApi.DataLayer.Migrations
 {
-    public partial class V2018_09_02_1400 : Migration
+    public partial class V2019_03_12_1919 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

@@ -10,14 +10,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DNT.IDP.DataLayer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("13970630061010_V2018_09_21_1039")]
-    partial class V2018_09_21_1039
+    [Migration("13971221154658_V2019_03_12_1916")]
+    partial class V2019_03_12_1916
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.3-rtm-32065")
+                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -53,8 +53,7 @@ namespace DNT.IDP.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ApiResourceId")
-                        .IsRequired();
+                    b.Property<int>("ApiResourceId");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -73,8 +72,7 @@ namespace DNT.IDP.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ApiResourceId")
-                        .IsRequired();
+                    b.Property<int>("ApiResourceId");
 
                     b.Property<string>("Description")
                         .HasMaxLength(1000);
@@ -108,8 +106,7 @@ namespace DNT.IDP.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ApiScopeId")
-                        .IsRequired();
+                    b.Property<int>("ApiScopeId");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -128,8 +125,7 @@ namespace DNT.IDP.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ApiResourceId")
-                        .IsRequired();
+                    b.Property<int>("ApiResourceId");
 
                     b.Property<string>("Description")
                         .HasMaxLength(1000);
@@ -249,8 +245,7 @@ namespace DNT.IDP.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ClientId")
-                        .IsRequired();
+                    b.Property<int>("ClientId");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -273,8 +268,7 @@ namespace DNT.IDP.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ClientId")
-                        .IsRequired();
+                    b.Property<int>("ClientId");
 
                     b.Property<string>("Origin")
                         .IsRequired()
@@ -293,8 +287,7 @@ namespace DNT.IDP.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ClientId")
-                        .IsRequired();
+                    b.Property<int>("ClientId");
 
                     b.Property<string>("GrantType")
                         .IsRequired()
@@ -313,8 +306,7 @@ namespace DNT.IDP.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ClientId")
-                        .IsRequired();
+                    b.Property<int>("ClientId");
 
                     b.Property<string>("Provider")
                         .IsRequired()
@@ -333,8 +325,7 @@ namespace DNT.IDP.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ClientId")
-                        .IsRequired();
+                    b.Property<int>("ClientId");
 
                     b.Property<string>("PostLogoutRedirectUri")
                         .IsRequired()
@@ -353,8 +344,7 @@ namespace DNT.IDP.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ClientId")
-                        .IsRequired();
+                    b.Property<int>("ClientId");
 
                     b.Property<string>("Key")
                         .IsRequired()
@@ -377,8 +367,7 @@ namespace DNT.IDP.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ClientId")
-                        .IsRequired();
+                    b.Property<int>("ClientId");
 
                     b.Property<string>("RedirectUri")
                         .IsRequired()
@@ -397,8 +386,7 @@ namespace DNT.IDP.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ClientId")
-                        .IsRequired();
+                    b.Property<int>("ClientId");
 
                     b.Property<string>("Scope")
                         .IsRequired()
@@ -417,8 +405,7 @@ namespace DNT.IDP.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ClientId")
-                        .IsRequired();
+                    b.Property<int>("ClientId");
 
                     b.Property<string>("Description")
                         .HasMaxLength(2000);
@@ -445,8 +432,7 @@ namespace DNT.IDP.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("IdentityResourceId")
-                        .IsRequired();
+                    b.Property<int>("IdentityResourceId");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -542,9 +528,20 @@ namespace DNT.IDP.DataLayer.Migrations
                     b.ToTable("Users");
 
                     b.HasData(
-                        new { SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7", IsActive = true, Password = "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=", Username = "User 1" },
-                        new { SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7", IsActive = true, Password = "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=", Username = "User 2" }
-                    );
+                        new
+                        {
+                            SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7",
+                            IsActive = true,
+                            Password = "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=",
+                            Username = "User 1"
+                        },
+                        new
+                        {
+                            SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7",
+                            IsActive = true,
+                            Password = "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=",
+                            Username = "User 2"
+                        });
                 });
 
             modelBuilder.Entity("DNT.IDP.DomainClasses.UserClaim", b =>
@@ -567,25 +564,95 @@ namespace DNT.IDP.DataLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SubjectId", "ClaimType")
-                        .IsUnique();
+                    b.HasIndex("SubjectId", "ClaimType");
 
                     b.ToTable("UserClaims");
 
                     b.HasData(
-                        new { Id = 1, ClaimType = "given_name", ClaimValue = "Vahid", SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7" },
-                        new { Id = 2, ClaimType = "family_name", ClaimValue = "N", SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7" },
-                        new { Id = 3, ClaimType = "address", ClaimValue = "Main Road 1", SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7" },
-                        new { Id = 4, ClaimType = "role", ClaimValue = "PayingUser", SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7" },
-                        new { Id = 5, ClaimType = "subscriptionlevel", ClaimValue = "PayingUser", SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7" },
-                        new { Id = 6, ClaimType = "country", ClaimValue = "ir", SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7" },
-                        new { Id = 7, ClaimType = "given_name", ClaimValue = "User 2", SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
-                        new { Id = 8, ClaimType = "family_name", ClaimValue = "Test", SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
-                        new { Id = 9, ClaimType = "address", ClaimValue = "Big Street 2", SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
-                        new { Id = 10, ClaimType = "role", ClaimValue = "FreeUser", SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
-                        new { Id = 11, ClaimType = "subscriptionlevel", ClaimValue = "FreeUser", SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
-                        new { Id = 12, ClaimType = "country", ClaimValue = "be", SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7" }
-                    );
+                        new
+                        {
+                            Id = 1,
+                            ClaimType = "given_name",
+                            ClaimValue = "Vahid",
+                            SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ClaimType = "family_name",
+                            ClaimValue = "N",
+                            SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            ClaimType = "address",
+                            ClaimValue = "Main Road 1",
+                            SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            ClaimType = "role",
+                            ClaimValue = "PayingUser",
+                            SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            ClaimType = "subscriptionlevel",
+                            ClaimValue = "PayingUser",
+                            SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            ClaimType = "country",
+                            ClaimValue = "ir",
+                            SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            ClaimType = "given_name",
+                            ClaimValue = "User 2",
+                            SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            ClaimType = "family_name",
+                            ClaimValue = "Test",
+                            SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            ClaimType = "address",
+                            ClaimValue = "Big Street 2",
+                            SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            ClaimType = "role",
+                            ClaimValue = "FreeUser",
+                            SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            ClaimType = "subscriptionlevel",
+                            ClaimValue = "FreeUser",
+                            SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            ClaimType = "country",
+                            ClaimValue = "be",
+                            SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7"
+                        });
                 });
 
             modelBuilder.Entity("DNT.IDP.DomainClasses.UserLogin", b =>

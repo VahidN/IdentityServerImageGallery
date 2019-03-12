@@ -6,7 +6,7 @@
     <ProjectReference Include="..\..\WebApi\ImageGallery.WebApi.Models\ImageGallery.WebApi.Models.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="2.1.1.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="2.2.0" />
   </ItemGroup>
 </Project>
