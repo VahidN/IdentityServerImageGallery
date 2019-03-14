@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace DNT.IDP.DataLayer.Migrations
 {
-    public partial class V2019_03_12_1916 : Migration
+    public partial class V2019_03_14_0855 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -474,14 +474,16 @@ namespace DNT.IDP.DataLayer.Migrations
                     { 2, "family_name", "N", "d860efca-22d9-47fd-8249-791ba61b07c7" },
                     { 3, "address", "Main Road 1", "d860efca-22d9-47fd-8249-791ba61b07c7" },
                     { 4, "role", "PayingUser", "d860efca-22d9-47fd-8249-791ba61b07c7" },
-                    { 5, "subscriptionlevel", "PayingUser", "d860efca-22d9-47fd-8249-791ba61b07c7" },
-                    { 6, "country", "ir", "d860efca-22d9-47fd-8249-791ba61b07c7" },
-                    { 7, "given_name", "User 2", "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
-                    { 8, "family_name", "Test", "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
-                    { 9, "address", "Big Street 2", "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
-                    { 10, "role", "FreeUser", "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
-                    { 11, "subscriptionlevel", "FreeUser", "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
-                    { 12, "country", "be", "b7539694-97e7-4dfe-84da-b4256e1ff5c7" }
+                    { 5, "role", "Test", "d860efca-22d9-47fd-8249-791ba61b07c7" },
+                    { 6, "subscriptionlevel", "PayingUser", "d860efca-22d9-47fd-8249-791ba61b07c7" },
+                    { 7, "country", "ir", "d860efca-22d9-47fd-8249-791ba61b07c7" },
+                    { 8, "given_name", "User 2", "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
+                    { 9, "family_name", "Test", "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
+                    { 10, "address", "Big Street 2", "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
+                    { 11, "role", "FreeUser", "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
+                    { 12, "role", "Test", "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
+                    { 13, "subscriptionlevel", "FreeUser", "b7539694-97e7-4dfe-84da-b4256e1ff5c7" },
+                    { 14, "country", "be", "b7539694-97e7-4dfe-84da-b4256e1ff5c7" }
                 });
 
             migrationBuilder.CreateIndex(

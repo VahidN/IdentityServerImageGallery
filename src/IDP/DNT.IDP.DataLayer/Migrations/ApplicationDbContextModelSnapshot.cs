@@ -598,55 +598,69 @@ namespace DNT.IDP.DataLayer.Migrations
                         new
                         {
                             Id = 5,
+                            ClaimType = "role",
+                            ClaimValue = "Test",
+                            SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7"
+                        },
+                        new
+                        {
+                            Id = 6,
                             ClaimType = "subscriptionlevel",
                             ClaimValue = "PayingUser",
                             SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7"
                         },
                         new
                         {
-                            Id = 6,
+                            Id = 7,
                             ClaimType = "country",
                             ClaimValue = "ir",
                             SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7"
                         },
                         new
                         {
-                            Id = 7,
+                            Id = 8,
                             ClaimType = "given_name",
                             ClaimValue = "User 2",
                             SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7"
                         },
                         new
                         {
-                            Id = 8,
+                            Id = 9,
                             ClaimType = "family_name",
                             ClaimValue = "Test",
                             SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7"
                         },
                         new
                         {
-                            Id = 9,
+                            Id = 10,
                             ClaimType = "address",
                             ClaimValue = "Big Street 2",
                             SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7"
                         },
                         new
                         {
-                            Id = 10,
+                            Id = 11,
                             ClaimType = "role",
                             ClaimValue = "FreeUser",
                             SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7"
                         },
                         new
                         {
-                            Id = 11,
+                            Id = 12,
+                            ClaimType = "role",
+                            ClaimValue = "Test",
+                            SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7"
+                        },
+                        new
+                        {
+                            Id = 13,
                             ClaimType = "subscriptionlevel",
                             ClaimValue = "FreeUser",
                             SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7"
                         },
                         new
                         {
-                            Id = 12,
+                            Id = 14,
                             ClaimType = "country",
                             ClaimValue = "be",
                             SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7"

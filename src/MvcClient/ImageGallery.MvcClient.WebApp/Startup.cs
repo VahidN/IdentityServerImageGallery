@@ -80,7 +80,7 @@ namespace ImageGallery.MvcClient.WebApp
                   options.ClaimActions.DeleteClaim("idp");
                   // options.ClaimActions.DeleteClaim("address");
 
-                  options.ClaimActions.MapUniqueJsonKey(claimType: "role", jsonKey: "role");
+                  options.ClaimActions.MapJsonKey(claimType: "role", jsonKey: "role"); // for having 2 or more roles
                   options.ClaimActions.MapUniqueJsonKey(claimType: "subscriptionlevel", jsonKey: "subscriptionlevel");
                   options.ClaimActions.MapUniqueJsonKey(claimType: "country", jsonKey: "country");
 

@@ -12,21 +12,23 @@ namespace DNT.IDP.DataLayer.Configurations
             var subjectId2 = "b7539694-97e7-4dfe-84da-b4256e1ff5c7";
             builder.HasData(
                 // ---- User 1
-                new UserClaim {Id = 1, SubjectId = subjectId1, ClaimType = "given_name", ClaimValue = "Vahid"},
-                new UserClaim {Id = 2, SubjectId = subjectId1, ClaimType = "family_name", ClaimValue = "N"},
-                new UserClaim {Id = 3, SubjectId = subjectId1, ClaimType = "address", ClaimValue = "Main Road 1"},
-                new UserClaim {Id = 4, SubjectId = subjectId1, ClaimType = "role", ClaimValue = "PayingUser"},
+                new UserClaim { Id = 1, SubjectId = subjectId1, ClaimType = "given_name", ClaimValue = "Vahid" },
+                new UserClaim { Id = 2, SubjectId = subjectId1, ClaimType = "family_name", ClaimValue = "N" },
+                new UserClaim { Id = 3, SubjectId = subjectId1, ClaimType = "address", ClaimValue = "Main Road 1" },
+                new UserClaim { Id = 4, SubjectId = subjectId1, ClaimType = "role", ClaimValue = "PayingUser" },
+                new UserClaim { Id = 5, SubjectId = subjectId1, ClaimType = "role", ClaimValue = "Test" },
                 new UserClaim
-                    {Id = 5, SubjectId = subjectId1, ClaimType = "subscriptionlevel", ClaimValue = "PayingUser"},
-                new UserClaim {Id = 6, SubjectId = subjectId1, ClaimType = "country", ClaimValue = "ir"},
+                { Id = 6, SubjectId = subjectId1, ClaimType = "subscriptionlevel", ClaimValue = "PayingUser" },
+                new UserClaim { Id = 7, SubjectId = subjectId1, ClaimType = "country", ClaimValue = "ir" },
                 // ---- User 2
-                new UserClaim {Id = 7, SubjectId = subjectId2, ClaimType = "given_name", ClaimValue = "User 2"},
-                new UserClaim {Id = 8, SubjectId = subjectId2, ClaimType = "family_name", ClaimValue = "Test"},
-                new UserClaim {Id = 9, SubjectId = subjectId2, ClaimType = "address", ClaimValue = "Big Street 2"},
-                new UserClaim {Id = 10, SubjectId = subjectId2, ClaimType = "role", ClaimValue = "FreeUser"},
+                new UserClaim { Id = 8, SubjectId = subjectId2, ClaimType = "given_name", ClaimValue = "User 2" },
+                new UserClaim { Id = 9, SubjectId = subjectId2, ClaimType = "family_name", ClaimValue = "Test" },
+                new UserClaim { Id = 10, SubjectId = subjectId2, ClaimType = "address", ClaimValue = "Big Street 2" },
+                new UserClaim { Id = 11, SubjectId = subjectId2, ClaimType = "role", ClaimValue = "FreeUser" },
+                new UserClaim { Id = 12, SubjectId = subjectId2, ClaimType = "role", ClaimValue = "Test" },
                 new UserClaim
-                    {Id = 11, SubjectId = subjectId2, ClaimType = "subscriptionlevel", ClaimValue = "FreeUser"},
-                new UserClaim {Id = 12, SubjectId = subjectId2, ClaimType = "country", ClaimValue = "be"}
+                { Id = 13, SubjectId = subjectId2, ClaimType = "subscriptionlevel", ClaimValue = "FreeUser" },
+                new UserClaim { Id = 14, SubjectId = subjectId2, ClaimType = "country", ClaimValue = "be" }
             );
 
             builder.HasOne(userClaim => userClaim.User)
